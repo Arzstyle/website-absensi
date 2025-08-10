@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunshine Elementary - Student Attendance</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: linear-gradient(135deg, #FFE066 0%, #FF6B6B 25%, #4ECDC4 50%, #45B7D1 75%, #96CEB4 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .school-supplies {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.1;
+        }
+        
+        .supply-item {
+            position: absolute;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .btn-bounce {
+            transition: all 0.2s ease;
+        }
+        
+        .btn-bounce:hover {
+            transform: scale(1.05);
+        }
+        
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+        
+        .calendar-day {
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative">
+    <!-- School Supplies Background -->
+    <div class="school-supplies">
+        <div class="supply-item top-10 left-10 text-6xl" style="animation-delay: 0s;">✏️</div>
+        <div class="supply-item top-20 right-20 text-5xl" style="animation-delay: 1s;">📚</div>
+        <div class="supply-item bottom-20 left-20 text-4xl" style="animation-delay: 2s;">📐</div>
+        <div class="supply-item top-1/2 right-10 text-6xl" style="animation-delay: 3s;">🖍️</div>
+        <div class="supply-item bottom-10 right-1/3 text-5xl" style="animation-delay: 4s;">📝</div>
+        <div class="supply-item top-1/3 left-1/4 text-4xl" style="animation-delay: 5s;">🎒</div>
+    </div>
+
+    <!-- Header -->
+    <header class="relative z-10 bg-white/90 backdrop-blur-sm shadow-lg rounded-b-3xl mx-4 mt-4">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-3xl shadow-lg">
+                        🌞
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-800">Sunshine Elementary</h1>
+                        <p class="text-lg text-gray-600">Student Attendance Portal</p>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="#" class="px-6 py-3 bg-blue-500 text-white rounded-full font-semibold btn-bounce hover:bg-blue-600">Dashboard</a>
+                    <a href="#" class="px-6 py-3 bg-green-500 text-white rounded-full font-semibold btn-bounce hover:bg-green-600">Students</a>
+                    <a href="#" class="px-6 py-3 bg-purple-500 text-white rounded-full font-semibold btn-bounce hover:bg-purple-600">Reports</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 container mx-auto px-4 py-8">
+        <!-- Main Attendance Panel -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <!-- Calendar View -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl card-hover">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    📅 <span class="ml-2">Attendance Calendar</span>
+                </h2>
+                <div class="grid grid-cols-7 gap-2 mb-4">
+                    <div class="text-center font-semibold text-gray-600 py-2">Sun</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Mon</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Tue</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Wed</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Thu</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Fri</div>
+                    <div class="text-center font-semibold text-gray-600 py-2">Sat</div>
+                </div>
+                <div class="grid grid-cols-7 gap-2" id="calendar">
+                    <!-- Calendar days will be generated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl card-hover">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    ⚡ <span class="ml-2">Quick Actions</span>
+                </h2>
+                <div class="space-y-4">
+                    <button class="w-full bg-gradient-to-r from-green-400 to-green-600 text-white py-4 px-6 rounded-2xl font-semibold text-lg btn-bounce shadow-lg">
+                        📝 Mark All Present
+                    </button>
+                    <button class="w-full bg-gradient-to-r from-blue-400 to-blue-600 text-white py-4 px-6 rounded-2xl font-semibold text-lg btn-bounce shadow-lg">
+                        📊 Generate Report
+                    </button>
+                    <button class="w-full bg-gradient-to-r from-purple-400 to-purple-600 text-white py-4 px-6 rounded-2xl font-semibold text-lg btn-bounce shadow-lg">
+                        📧 Send Notifications
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Profile Cards -->
+        <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl card-hover mb-8">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                👥 <span class="ml-2">Today's Attendance - Grade 3A</span>
+            </h2>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Student Cards -->
+                <div class="bg-gradient-to-br from-pink-100 to-pink-200 rounded-2xl p-4 card-hover">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl">👧</div>
+                        <h3 class="font-bold text-gray-800">Emma Johnson</h3>
+                        <p class="text-sm text-gray-600 mb-3">Grade 3A • ID: 001</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-green-600">✓ Present</button>
+                            <button class="flex-1 bg-red-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-red-600">✗ Absent</button>
+                        </div>
+                        <div class="mt-2 text-xs text-green-600 font-semibold">Status: Present</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl p-4 card-hover">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl">👦</div>
+                        <h3 class="font-bold text-gray-800">Liam Smith</h3>
+                        <p class="text-sm text-gray-600 mb-3">Grade 3A • ID: 002</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-green-600">✓ Present</button>
+                            <button class="flex-1 bg-red-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-red-600">✗ Absent</button>
+                        </div>
+                        <div class="mt-2 text-xs text-red-600 font-semibold">Status: Absent</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-green-100 to-green-200 rounded-2xl p-4 card-hover">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-green-400 to-green-600 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl">👧</div>
+                        <h3 class="font-bold text-gray-800">Sophia Davis</h3>
+                        <p class="text-sm text-gray-600 mb-3">Grade 3A • ID: 003</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-green-600">✓ Present</button>
+                            <button class="flex-1 bg-red-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-red-600">✗ Absent</button>
+                        </div>
+                        <div class="mt-2 text-xs text-green-600 font-semibold">Status: Present</div>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-br from-yellow-100 to-yellow-200 rounded-2xl p-4 card-hover">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full mx-auto mb-3 flex items-center justify-center text-2xl">👦</div>
+                        <h3 class="font-bold text-gray-800">Noah Wilson</h3>
+                        <p class="text-sm text-gray-600 mb-3">Grade 3A • ID: 004</p>
+                        <div class="flex space-x-2">
+                            <button class="flex-1 bg-green-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-green-600">✓ Present</button>
+                            <button class="flex-1 bg-red-500 text-white py-2 px-3 rounded-xl text-sm font-semibold btn-bounce hover:bg-red-600">✗ Absent</button>
+                        </div>
+                        <div class="mt-2 text-xs text-green-600 font-semibold">Status: Present</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Section -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl card-hover">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    📈 <span class="ml-2">Weekly Attendance</span>
+                </h2>
+                <canvas id="weeklyChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl card-hover">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+                    🎯 <span class="ml-2">Class Statistics</span>
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-green-100 rounded-2xl">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-xl">✓</div>
+                            <div class="ml-4">
+                                <h3 class="font-bold text-gray-800">Present Today</h3>
+                                <p class="text-sm text-gray-600">Students in class</p>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold text-green-600">23</div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-red-100 rounded-2xl">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white text-xl">✗</div>
+                            <div class="ml-4">
+                                <h3 class="font-bold text-gray-800">Absent Today</h3>
+                                <p class="text-sm text-gray-600">Students missing</p>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold text-red-600">2</div>
+                    </div>
+
+                    <div class="flex items-center justify-between p-4 bg-blue-100 rounded-2xl">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl">%</div>
+                            <div class="ml-4">
+                                <h3 class="font-bold text-gray-800">Attendance Rate</h3>
+                                <p class="text-sm text-gray-600">This week average</p>
+                            </div>
+                        </div>
+                        <div class="text-3xl font-bold text-blue-600">92%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-white/90 backdrop-blur-sm rounded-t-3xl mx-4 mt-8">
+        <div class="container mx-auto px-6 py-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        🏫 <span class="ml-2">Contact Info</span>
+                    </h3>
+                    <div class="space-y-2 text-gray-600">
+                        <p>📍 123 Learning Lane, Education City</p>
+                        <p>📞 (555) 123-KIDS</p>
+                        <p>✉️ info@sunshineschool.edu</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        🕒 <span class="ml-2">School Hours</span>
+                    </h3>
+                    <div class="space-y-2 text-gray-600">
+                        <p>Monday - Friday: 8:00 AM - 3:30 PM</p>
+                        <p>Office Hours: 7:30 AM - 4:00 PM</p>
+                        <p>Weekend: Closed</p>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        🌐 <span class="ml-2">Follow Us</span>
+                    </h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl btn-bounce hover:bg-blue-600">📘</a>
+                        <a href="#" class="w-12 h-12 bg-pink-500 rounded-full flex items-center justify-center text-white text-xl btn-bounce hover:bg-pink-600">📷</a>
+                        <a href="#" class="w-12 h-12 bg-blue-400 rounded-full flex items-center justify-center text-white text-xl btn-bounce hover:bg-blue-500">🐦</a>
+                        <a href="#" class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white text-xl btn-bounce hover:bg-red-600">📺</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 mt-8 pt-6 text-center text-gray-600">
+                <p>&copy; 2024 Sunshine Elementary School. Made with ❤️ for our amazing students!</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Generate Calendar
+        function generateCalendar() {
+            const calendar = document.getElementById('calendar');
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentYear = today.getFullYear();
+            const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Add empty cells for days before the first day of the month
+            for (let i = 0; i < firstDay; i++) {
+                const emptyDay = document.createElement('div');
+                calendar.appendChild(emptyDay);
+            }
+            
+            // Add days of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day text-center py-3 rounded-xl cursor-pointer font-semibold';
+                dayElement.textContent = day;
+                
+                if (day === today.getDate()) {
+                    dayElement.className += ' bg-gradient-to-br from-blue-400 to-blue-600 text-white';
+                } else if (day < today.getDate()) {
+                    dayElement.className += ' bg-green-100 text-green-600 hover:bg-green-200';
+                } else {
+                    dayElement.className += ' bg-gray-100 text-gray-600 hover:bg-gray-200';
+                }
+                
+                calendar.appendChild(dayElement);
+            }
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Late'],
+                    datasets: [{
+                        data: [85, 10, 5],
+                        backgroundColor: [
+                            '#10B981',
+                            '#EF4444',
+                            '#F59E0B'
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    family: 'Fredoka',
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Add click functionality to attendance buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            generateCalendar();
+            initChart();
+            
+            // Add click handlers for attendance buttons
+            const presentButtons = document.querySelectorAll('button:contains("Present")');
+            const absentButtons = document.querySelectorAll('button:contains("Absent")');
+            
+            document.querySelectorAll('button').forEach(button => {
+                if (button.textContent.includes('Present') || button.textContent.includes('Absent')) {
+                    button.addEventListener('click', function() {
+                        const card = this.closest('.bg-gradient-to-br');
+                        const statusDiv = card.querySelector('.mt-2');
+                        
+                        if (this.textContent.includes('Present')) {
+                            statusDiv.textContent = 'Status: Present';
+                            statusDiv.className = 'mt-2 text-xs text-green-600 font-semibold';
+                        } else {
+                            statusDiv.textContent = 'Status: Absent';
+                            statusDiv.className = 'mt-2 text-xs text-red-600 font-semibold';
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96d0401c068c7977',t:'MTc1NDgzNjg0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
