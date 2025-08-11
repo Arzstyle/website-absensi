@@ -382,9 +382,6 @@
             initChart();
             
             // Add click handlers for attendance buttons
-            const presentButtons = document.querySelectorAll('button:contains("Present")');
-            const absentButtons = document.querySelectorAll('button:contains("Absent")');
-            
             document.querySelectorAll('button').forEach(button => {
                 if (button.textContent.includes('Present') || button.textContent.includes('Absent')) {
                     button.addEventListener('click', function() {
