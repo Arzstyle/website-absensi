@@ -1,0 +1,32 @@
+{
+  "name": "sunshine-elementary-attendance",
+  "version": "1.0.0",
+  "description": "School attendance management system with Supabase backend",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "joi": "^17.11.0",
+    "exceljs": "^4.4.0"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0",
+    "nodemon": "^3.0.2"
+  },
+  "keywords": [
+    "attendance",
+    "school",
+    "supabase",
+    "education"
+  ],
+  "author": "",
+  "license": "MIT"
+}
